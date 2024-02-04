@@ -1,4 +1,4 @@
-use crate::database_service_trait::{DatabaseServiceError, DatabaseServiceTrait};
+use crate::data_services::database_service_trait::{DatabaseServiceError, DatabaseServiceTrait};
 use sqlx::sqlite::SqlitePool;
 use async_trait::async_trait;
 
@@ -42,7 +42,7 @@ impl DatabaseServiceTrait for DatabaseService {
         Ok(last_inserted_id)
     }
 
-    async fn update(&self, _query: &str) -> Result<i64, DatabaseServiceError> {
+    async fn update(&mut self, _query: &str) -> Result<i64, DatabaseServiceError> {
         Ok(2)
     }
 

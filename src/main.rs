@@ -1,11 +1,15 @@
-mod database_service_trait;
-mod database_service;
-mod item;
-mod item_storage_service;
+pub mod data_services {
+    pub mod database_service;
+    pub mod database_service_trait;
+    pub mod item_storage_service;
+}
+pub mod models {
+    pub mod item;
+}
 
-use database_service::DatabaseService;
-use item::Item;
-use crate::item_storage_service::ItemStorageService;
+use crate::models::item::Item;
+use crate::data_services::database_service::DatabaseService;
+use crate::data_services::item_storage_service::ItemStorageService;
 use std::env;
 use dotenv::dotenv;
 

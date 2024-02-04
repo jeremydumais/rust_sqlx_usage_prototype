@@ -1,4 +1,6 @@
-use crate::{database_service_trait::{DatabaseServiceTrait, DatabaseServiceError}, item::Item};
+use crate::{data_services::database_service_trait::{DatabaseServiceTrait, DatabaseServiceError},
+    models::item::Item
+};
 
 pub struct ItemStorageService {
     db_service: Box<dyn DatabaseServiceTrait>
@@ -59,7 +61,7 @@ mod tests {
             }
         }
 
-        async fn update(&self, _query: &str) -> Result<i64, DatabaseServiceError> {
+        async fn update(&mut self, _query: &str) -> Result<i64, DatabaseServiceError> {
             Ok(1)
         }
 
@@ -91,3 +93,4 @@ mod tests {
         assert_eq!("error", storage.add_item(&Item::new(-1, "test")).await.unwrap_err().to_string());
     }
 }
+
