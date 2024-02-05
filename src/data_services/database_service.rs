@@ -42,11 +42,27 @@ impl DatabaseServiceTrait for DatabaseService {
         Ok(last_inserted_id)
     }
 
-    async fn update(&mut self, _query: &str) -> Result<i64, DatabaseServiceError> {
-        Ok(2)
+    async fn update(&mut self, query: &str) -> Result<u64, DatabaseServiceError> {
+        if self.pool.is_none() {
+            return Err(DatabaseServiceError::new(self.get_not_connected_msg().as_str()));
+        }
+        let mut conn = self.pool.as_mut().unwrap().acquire().await
+            .map_err(|e| DatabaseServiceError::new(e.to_string().as_str()))?;
+        let rows_affected = sqlx::query(query).execute(&mut *conn).await
+            .map(|result| result.rows_affected())
+            .map_err(|e| DatabaseServiceError::new(e.to_string().as_str()))?;
+        Ok(rows_affected)
     }
 
-    async fn delete(&self, _query: &str) -> Result<i64, DatabaseServiceError> {
-        Ok(3)
+    async fn delete(&mut self, query: &str) -> Result<u64, DatabaseServiceError> {
+        if self.pool.is_none() {
+            return Err(DatabaseServiceError::new(self.get_not_connected_msg().as_str()));
+        }
+        let mut conn = self.pool.as_mut().unwrap().acquire().await
+            .map_err(|e| DatabaseServiceError::new(e.to_string().as_str()))?;
+        let rows_affected = sqlx::query(query).execute(&mut *conn).await
+            .map(|result| result.rows_affected())
+            .map_err(|e| DatabaseServiceError::new(e.to_string().as_str()))?;
+        Ok(rows_affected)
     }
 }

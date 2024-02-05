@@ -22,8 +22,26 @@ async fn main() {
         .unwrap_or_else(|e| { eprintln!("{}", e);});
 
     let mut item_service = ItemStorageService::new(Box::new(db_service));
-    let _ = item_service.add_item(&Item::new(-1, "Test2")).await
+
+    // Add an item
+    println!("Adding an item...");
+    let mut item = Item::new(-1, "Test1");
+    let new_item_id = item_service.add_item(&item).await
         .unwrap_or_else(|e| { eprintln!("{}", e); -1});
+    item.set_id(new_item_id);
+
+    // Update an item
+    println!("Updating an item...");
+    item.set_descr("Test33");
+    let mut rows_affected = item_service.update_item(&item).await
+        .unwrap_or_else(|e| { eprintln!("{}", e); 0});
+    println!("Rows affected: {}", rows_affected);
+
+    // Delete an item
+    println!("Deleting an item...");
+    rows_affected = item_service.delete_item(new_item_id).await
+        .unwrap_or_else(|e| { eprintln!("{}", e); 0});
+    println!("Rows affected: {}", rows_affected);
 }
 
 

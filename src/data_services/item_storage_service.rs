@@ -18,6 +18,17 @@ impl ItemStorageService {
                                        item.get_descr()
                                        ).as_str()).await
     }
+
+    pub async fn update_item(&mut self, updated_item: &Item) -> Result<u64, DatabaseServiceError> {
+        self.db_service.update(format!("UPDATE item SET descr = '{}' WHERE id = {}",
+                                       updated_item.get_descr(),
+                                       updated_item.get_id()).as_str()).await
+    }
+
+    pub async fn delete_item(&mut self, item_id: i64) -> Result<u64, DatabaseServiceError> {
+        self.db_service.delete(format!("DELETE FROM item WHERE id = {}",
+                                       item_id).as_str()).await
+    }
 }
 
 #[cfg(test)]
@@ -61,12 +72,20 @@ mod tests {
             }
         }
 
-        async fn update(&mut self, _query: &str) -> Result<i64, DatabaseServiceError> {
-            Ok(1)
+        async fn update(&mut self, query: &str) -> Result<u64, DatabaseServiceError> {
+            assert_eq!(self.received_query, query);
+            match &self.result {
+                FakeResult::Ok(x) => Ok(*x as u64),
+                FakeResult::Err(e) => Err(DatabaseServiceError::new(e.as_str()))
+            }
         }
 
-        async fn delete(&self, _query: &str) -> Result<i64, DatabaseServiceError> {
-            Ok(1)
+        async fn delete(&mut self, query: &str) -> Result<u64, DatabaseServiceError> {
+            assert_eq!(self.received_query, query);
+            match &self.result {
+                FakeResult::Ok(x) => Ok(*x as u64),
+                FakeResult::Err(e) => Err(DatabaseServiceError::new(e.as_str()))
+            }
         }
     }
 
@@ -91,6 +110,58 @@ mod tests {
             FakeResult::Err("error".to_owned())));
         let mut storage = ItemStorageService::new(fake_db);
         assert_eq!("error", storage.add_item(&Item::new(-1, "test")).await.unwrap_err().to_string());
+    }
+
+    #[tokio::test]
+    async fn itemstorageservice_update_item_with_descr_test2_return_1_row_affected() {
+        let mut fake_db = Box::new(FakeDataService::default());
+        fake_db.received_query = "UPDATE item SET descr = 'test2' WHERE id = 1".to_owned();
+        fake_db.result = FakeResult::Ok(1);
+        let mut storage = ItemStorageService::new(fake_db);
+        assert_eq!(1, storage.update_item(&Item::new(1, "test2")).await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn itemstorageservice_update_item_with_non_existing_item_return_0_row_affected() {
+        let mut fake_db = Box::new(FakeDataService::default());
+        fake_db.received_query = "UPDATE item SET descr = 'test2' WHERE id = 1".to_owned();
+        fake_db.result = FakeResult::Ok(0);
+        let mut storage = ItemStorageService::new(fake_db);
+        assert_eq!(0, storage.update_item(&Item::new(1, "test2")).await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn itemstorageservice_update_item_with_error_execution_return_err() {
+        let fake_db = Box::new(FakeDataService::new("UPDATE item SET descr = 'test2' WHERE id = 1",
+            FakeResult::Err("error".to_owned())));
+        let mut storage = ItemStorageService::new(fake_db);
+        assert_eq!("error", storage.update_item(&Item::new(1, "test2")).await.unwrap_err().to_string());
+    }
+
+    #[tokio::test]
+    async fn itemstorageservice_delete_item_with_id_2_existing_return_1_row_affected() {
+        let mut fake_db = Box::new(FakeDataService::default());
+        fake_db.received_query = "DELETE FROM item WHERE id = 2".to_owned();
+        fake_db.result = FakeResult::Ok(1);
+        let mut storage = ItemStorageService::new(fake_db);
+        assert_eq!(1, storage.delete_item(2).await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn itemstorageservice_delete_item_with_id_2_non_existing_return_0_row_affected() {
+        let mut fake_db = Box::new(FakeDataService::default());
+        fake_db.received_query = "DELETE FROM item WHERE id = 2".to_owned();
+        fake_db.result = FakeResult::Ok(0);
+        let mut storage = ItemStorageService::new(fake_db);
+        assert_eq!(0, storage.delete_item(2).await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn itemstorageservice_delete_item_with_error_execution_return_err() {
+        let fake_db = Box::new(FakeDataService::new("DELETE FROM item WHERE id = 1",
+            FakeResult::Err("error".to_owned())));
+        let mut storage = ItemStorageService::new(fake_db);
+        assert_eq!("error", storage.delete_item(1).await.unwrap_err().to_string());
     }
 }
 

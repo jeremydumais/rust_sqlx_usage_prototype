@@ -11,7 +11,19 @@ impl Item {
         }
     }
 
+    pub fn get_id(&self) -> i64 {
+        self.id
+    }
+
     pub fn get_descr(&self) -> &str {
         self.descr.as_str()
+    }
+
+    pub fn set_id(&mut self, id: i64) {
+        self.id = id;
+    }
+
+    pub fn set_descr(&mut self, value: &str) {
+        self.descr = value.to_owned();
     }
 }
