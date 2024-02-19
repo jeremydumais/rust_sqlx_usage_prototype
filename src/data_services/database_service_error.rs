@@ -1,5 +1,4 @@
 use core::fmt;
-use async_trait::async_trait;
 
 pub struct DatabaseServiceError {
     message: String
@@ -25,10 +24,3 @@ impl fmt::Debug for DatabaseServiceError {
     }
 }
 
-#[async_trait]
-pub trait DatabaseServiceTrait {
-    async fn insert(&mut self, query: &str) -> Result<i64, DatabaseServiceError>;
-    async fn update(&mut self, query: &str) -> Result<u64, DatabaseServiceError>;
-    async fn delete(&mut self, query: &str) -> Result<u64, DatabaseServiceError>;
-    //fn select(query: &str, args: &[&dyn std::fmt::Debug]) ->
-}
