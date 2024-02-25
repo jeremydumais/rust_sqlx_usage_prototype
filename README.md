@@ -49,3 +49,14 @@ DELETE FROM sqlite_sequence;
 COMMIT;
 ```
 
+## Running the prototype
+
+```bash
+cargo run
+```
+
+## Running the prototype tests
+
+```bash
+cargo test
+```
